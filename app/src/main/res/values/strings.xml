@@ -2,7 +2,7 @@
     <string name="app_name">Vpiska</string>
     <string name="drawerOpen">drawerOpen</string>
     <string name="drawerClose">drawerClose</string>
-    <string name="PlacesApiKey">AIzaSyChjP5hsInhv3gwcpz5mKdSMBn6MxIegns</string>
+    <string name="PlacesApiKey">*****</string>
     <string-array name="Cities">
         <item>Абакан</item>
         <item>Азов</item>
