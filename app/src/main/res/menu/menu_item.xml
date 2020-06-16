@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+
+    <item android:id="@+id/city"
+        android:title="Город"
+        app:actionLayout="@layout/spinner">
+    </item>
+
+    <item android:id="@+id/addАd"
+        android:title="Добавить объявление">
+    </item>
+    <item android:id="@+id/messeges"
+        android:title="Мои сообщения">
+    </item>
+
+</menu>

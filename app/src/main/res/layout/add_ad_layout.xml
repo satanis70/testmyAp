@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:layout_height="match_parent">
+
+
+    <EditText
+        android:id="@+id/edit_text_name_ads"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:hint="Название объявления..."
+        android:singleLine="true"
+        android:maxLength="30"
+        android:text="" />
+
+    <EditText
+        android:id="@+id/edit_text_more_details"
+        android:layout_marginTop="30dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Опишите подробнее..."
+        android:singleLine="false"
+        android:inputType="textMultiLine"
+        android:ellipsize="end"
+        android:maxLength="300"
+        />
+
+
+    <EditText
+        android:id="@+id/text_adress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Введите адрес..."
+        android:layout_marginTop="30dp"
+        />
+
+    <EditText
+        android:id="@+id/edit_text_number_phone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Введите номер телефона..."
+        android:singleLine="false"
+        android:layout_marginTop="30dp"
+        android:inputType="number"
+        android:ellipsize="end"
+        tools:ignore="TextFields" />
+
+    <ImageButton
+        android:id="@+id/image_button_food"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="30dp"
+        app:srcCompat="@drawable/ic_add_a_photo_black_24dp"
+        tools:ignore="VectorDrawableCompat" />
+
+    <Button
+        android:id="@+id/button_add_ad"
+        android:layout_marginTop="30dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/roundrect"
+        android:text="Добавить объявление" />
+
+
+</LinearLayout>

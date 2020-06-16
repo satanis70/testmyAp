@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+
+    <EditText
+        android:id="@+id/editRegTextEmail"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:layout_marginTop="20dp"
+        android:hint="E-mail"
+        android:layout_gravity="center"
+        android:inputType="textEmailAddress"
+        android:textSize="16dp" />
+
+    <EditText
+        android:id="@+id/editRegTextPass"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:ems="10"
+        android:hint="Password"
+        android:layout_gravity="center"
+        android:inputType="textPassword"
+        android:textSize="16dp" />
+
+    <EditText
+        android:id="@+id/editRegTextPassConfirm"
+        android:layout_width="match_parent"
+        android:layout_marginTop="20dp"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:layout_gravity="center"
+        android:hint="Confirm Password"
+        android:inputType="textPassword"
+        android:textSize="16dp" />
+
+    <EditText
+        android:id="@+id/editRegTextName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:layout_marginTop="20dp"
+        android:hint="Ваше имя"
+        android:layout_gravity="center"
+        android:inputType="textEmailAddress"
+        android:textSize="16dp" />
+
+
+    <Button
+        android:id="@+id/buttonreggo"
+        android:layout_width="300dp"
+        android:layout_gravity="center"
+        android:layout_height="wrap_content"
+        android:background="@drawable/roundrect"
+        android:onClick="onClick"
+        android:layout_marginTop="20dp"
+        android:text="ButtonReg" />
+
+    <ProgressBar
+        android:layout_marginTop="20dp"
+        android:id="@+id/progressBar"
+        android:layout_gravity="center"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone" />
+
+
+</LinearLayout>

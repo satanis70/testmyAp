@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "600571950590",
+    "firebase_url": "https://vpiska-2c807.firebaseio.com",
+    "project_id": "vpiska-2c807",
+    "storage_bucket": "vpiska-2c807.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:600571950590:android:3589783b933e7447d73caf",
+        "android_client_info": {
+          "package_name": "com.vpiska"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "600571950590-3pf2j1nofvg5et6lsem24eifh7uit5mg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDMyafJKKSbWBevydT1wTmWdc6UhtmkBog"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "600571950590-3pf2j1nofvg5et6lsem24eifh7uit5mg.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
