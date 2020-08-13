@@ -4,9 +4,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.format.DateFormat;
-import android.view.View;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -15,29 +12,23 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.firebase.ui.database.FirebaseListAdapter;
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.firestore.auth.User;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.squareup.picasso.Picasso;
-import com.vpiska.Home;
 import com.vpiska.R;
 import com.vpiska.UserChatModel.UserChatsModel;
 import com.vpiska.UserChatModel.UserMassagesRecyclerAdapter;
-import com.vpiska.adModel.CustomAdapterRecycler;
-import com.vpiska.adModel.ModelAd;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class UserMessagesActivity extends AppCompatActivity {
@@ -53,6 +44,7 @@ public class UserMessagesActivity extends AppCompatActivity {
     List<UserChatsModel> modelAdList = new ArrayList<>();
     RecyclerView.LayoutManager layoutManager;
     Uri imageUri;
+    String textMessage, timeMessage;
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
@@ -67,7 +59,7 @@ public class UserMessagesActivity extends AppCompatActivity {
         storageRef = storage.getReference();
         layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
-        storageChatId = firebaseDatabase.getReference("UserChat").child(user.getUid());
+        storageChatId = firebaseDatabase.getReference("UserChat");
         storageRefUser = firebaseDatabase.getReference("Users");
         displayChat();
 
@@ -76,46 +68,58 @@ public class UserMessagesActivity extends AppCompatActivity {
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     private void displayChat() {
-        final int autorNumber;
 
-       storageChatId.addValueEventListener(new ValueEventListener() {
+
+        storageChatId.child("Friends").child(user.getUid()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for (final DataSnapshot postSnapshot: dataSnapshot.getChildren()) {
-                    storageRef.child("images/" + postSnapshot.child("autor").getValue()).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                for (final DataSnapshot postSnapshot: dataSnapshot.getChildren()){
+                    storageRefUser.child(postSnapshot.getValue().toString()).addValueEventListener(new ValueEventListener() {
                         @Override
-                        public void onSuccess(final Uri uri) {
-                            final String time = (String) DateFormat.format("dd-MM-yyyy (HH:mm:ss)", Long.parseLong(postSnapshot.child("timeMessage").getValue().toString()));
-                            storageRefUser.child(postSnapshot.child("autor").getValue().toString()).addValueEventListener(new ValueEventListener() {
+                        public void onDataChange(@NonNull final DataSnapshot dataSnapshot1) {
+                            storageRef.child("images/" + postSnapshot.getValue()).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                                 @Override
-                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                    int a = dataSnapshot.getValue(String.class).length();
-                                    String autor = dataSnapshot.getValue(String.class);
-                                    userChatsModel = new UserChatsModel(autor, uri.toString(), time, postSnapshot.child("textMessage").getValue().toString());
-                                    modelAdList.add(userChatsModel);
-                                    UserMassagesRecyclerAdapter userMassagesRecyclerAdapter = new UserMassagesRecyclerAdapter(UserMessagesActivity.this, modelAdList);
-                                    recyclerView.setAdapter(userMassagesRecyclerAdapter);
-                                }
+                                public void onSuccess(final Uri uri) {
+                                    storageChatId.child(user.getUid()).child(postSnapshot.getValue().toString()).addValueEventListener(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot2) {
+                                                for (final DataSnapshot dataSnapshot3: dataSnapshot2.getChildren()){
+                                                    timeMessage = (String) DateFormat.format("dd-MM-yyyy (HH:mm:ss)", Long.parseLong(dataSnapshot3.child("timeMessage").getValue().toString()));
+                                                    textMessage = dataSnapshot3.child("textMessage").getValue().toString();
+                                                }
+                                            userChatsModel = new UserChatsModel(dataSnapshot1.getValue().toString(), uri.toString(), timeMessage, textMessage, postSnapshot.getValue().toString());
+                                            modelAdList.add(userChatsModel);
+                                            Collections.sort(modelAdList, new Comparator<UserChatsModel>() {
+                                                @Override
+                                                public int compare(UserChatsModel o1, UserChatsModel o2) {
+                                                    return o2.getTime().compareTo(o1.getTime());
+                                                }
+                                            });
+                                            UserMassagesRecyclerAdapter userMassagesRecyclerAdapter = new UserMassagesRecyclerAdapter(UserMessagesActivity.this, modelAdList);
+                                            recyclerView.setAdapter(userMassagesRecyclerAdapter);
 
-                                @Override
-                                public void onCancelled(@NonNull DatabaseError databaseError) {
+                                        }
+
+                                        @Override
+                                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                        }
+                                    });
+
 
                                 }
                             });
 
+
                         }
 
-                    }).addOnFailureListener(new OnFailureListener() {
                         @Override
-                        public void onFailure(@NonNull Exception exception) {
-                            Toast toast = Toast.makeText(getApplicationContext(),
-                                    "Произошла ошибка!", Toast.LENGTH_SHORT);
-                            toast.show();
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
                         }
                     });
 
                 }
-
 
             }
 

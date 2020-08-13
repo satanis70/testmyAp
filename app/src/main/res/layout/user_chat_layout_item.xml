@@ -7,19 +7,21 @@
     app:contentPadding="5dp"
     app:cardCornerRadius="3dp"
     app:cardElevation="3dp"
-    android:orientation="horizontal"
+    android:orientation="vertical"
     app:cardUseCompatPadding="true">
 
     <RelativeLayout
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="120dp"
+        android:orientation="vertical"
         android:padding="16dp">
 
-        <ImageView
+        <de.hdodenhof.circleimageview.CircleImageView
             android:id="@+id/Recycyler_ChatImageUser"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
-        </ImageView>
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            >
+        </de.hdodenhof.circleimageview.CircleImageView>
 
         <TextView
             android:id="@+id/Recycyler_name_user"
@@ -36,7 +38,9 @@
             android:id="@+id/Recycyler_Text_chat"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="22sp"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:textSize="18sp"
             android:layout_toRightOf="@id/Recycyler_ChatImageUser"
             android:layout_toEndOf="@id/Recycyler_ChatImageUser"
             android:layout_marginLeft="10dp"
@@ -49,12 +53,12 @@
             android:id="@+id/Recycyler_Time_chat"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_toRightOf="@id/Recycyler_ChatImageUser"
+            android:textSize="12sp"
+            android:maxLines="1"
+            android:layout_marginTop="70dp"
             android:layout_toEndOf="@id/Recycyler_ChatImageUser"
-            android:textSize="18sp"
-            android:layout_marginLeft="10dp"
-            android:layout_marginStart="10dp"
-            android:layout_marginTop="80dp">
+            android:layout_toRightOf="@id/Recycyler_ChatImageUser"
+            android:layout_marginLeft="100dp">
         </TextView>
 
 

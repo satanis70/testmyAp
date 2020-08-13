@@ -1,4 +1,4 @@
-package com.vpiska;
+package com.vpiska.Activities;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -6,16 +6,15 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.squareup.picasso.Picasso;
 import com.vpiska.Chat.ChatActivity;
+import com.vpiska.R;
 import com.vpiska.adModel.CustomAdapterRecycler;
 import com.vpiska.adModel.ModelAd;
-import com.vpiska.adModel.ViewHolder;
 
 import java.util.List;
 

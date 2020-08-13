@@ -4,5 +4,5 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_gravity="center_horizontal"
-    android:entries="@array/Cities"
+    android:entries="@array/cities"
     android:gravity="center_vertical" />

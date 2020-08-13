@@ -1,4 +1,4 @@
-package com.vpiska;
+package com.vpiska.Activities;
 
 import android.app.Application;
 import android.content.Intent;

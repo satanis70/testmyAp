@@ -27,6 +27,7 @@ public class ViewHolderChat extends RecyclerView.ViewHolder{
             @Override
             public void onClick(View v) {
                 mClickListener.onItemClick(v, getAdapterPosition());
+
             }
         });
     }

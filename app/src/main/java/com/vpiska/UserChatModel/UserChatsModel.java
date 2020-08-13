@@ -8,15 +8,17 @@ public class UserChatsModel {
     String autor;
     String lastMessage;
     String Time;
+    String idUser;
 
 
 
 
-    public UserChatsModel(String autor, String userImg, String Time, String lastMessage) {
+    public UserChatsModel(String autor, String userImg, String Time, String lastMessage, String idUser) {
         this.userImg = userImg;
         this.autor = autor;
         this.Time = Time;
         this.lastMessage = lastMessage;
+        this.idUser = idUser;
     }
 
     public String getUserImg() {
@@ -50,6 +52,14 @@ public class UserChatsModel {
 
     public void setLastMessage(String lastMessage) {
         this.lastMessage = lastMessage;
+    }
+
+    public String getIdUser() {
+        return idUser;
+    }
+
+    public void setIdUser(String idUser) {
+        this.idUser = idUser;
     }
 
 }

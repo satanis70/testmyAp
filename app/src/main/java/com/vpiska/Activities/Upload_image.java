@@ -1,4 +1,4 @@
-package com.vpiska;
+package com.vpiska.Activities;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -24,9 +24,9 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.vpiska.R;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 public class Upload_image extends Activity {

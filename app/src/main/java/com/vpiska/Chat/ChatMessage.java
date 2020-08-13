@@ -7,12 +7,17 @@ public class ChatMessage  {
     private String textMessage;
     private String autor;
     private long timeMessage;
+
+
+
+    private String receiver;
     String userImage;
 
-    public ChatMessage(String textMessage, String autor) {
+
+    public ChatMessage(String textMessage, String autor, String receiver) {
         this.textMessage = textMessage;
         this.autor = autor;
-
+        this.receiver = receiver;
         timeMessage = new Date().getTime();
     }
 
@@ -41,5 +46,13 @@ public class ChatMessage  {
 
     public void setTimeMessage(long timeMessage) {
         this.timeMessage = timeMessage;
+    }
+
+    public String getReceiver() {
+        return receiver;
+    }
+
+    public void setReceiver(String receiver) {
+        this.receiver = receiver;
     }
 }

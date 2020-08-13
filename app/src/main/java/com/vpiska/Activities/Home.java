@@ -1,12 +1,14 @@
-package com.vpiska;
+package com.vpiska.Activities;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -21,6 +23,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.room.Room;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -37,16 +40,26 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.auth.User;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.squareup.picasso.Picasso;
 import com.vpiska.Chat.UserMessagesActivity;
+import com.vpiska.R;
+import com.vpiska.SqlLiteCity.City;
+import com.vpiska.SqlLiteCity.DatabaseCity;
 import com.vpiska.adModel.CustomAdapterRecycler;
 import com.vpiska.adModel.ModelAd;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
+import io.reactivex.Scheduler;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
+
 
 public class Home extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -69,6 +82,9 @@ public class Home extends AppCompatActivity implements NavigationView.OnNavigati
     RecyclerView.LayoutManager layoutManager;
     CustomAdapterRecycler customAdapterRecycler;
     ModelAd modelAd;
+    String itemCity;
+    public static DatabaseCity databaseCity;
+    String cityfromDb;
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @SuppressLint("RestrictedApi")
@@ -94,13 +110,17 @@ public class Home extends AppCompatActivity implements NavigationView.OnNavigati
         firebaseFirestore = FirebaseFirestore.getInstance();
         View header = navigationView.getHeaderView(0);
         nameUserText = (TextView) header.findViewById(R.id.nameUserText);
-        //nameUserText.setText(storageRef.child("Users").child(user.getUid()));
         firebaseDatabase = FirebaseDatabase.getInstance();
         storageRefUser = firebaseDatabase.getReference("Users").child(user.getUid());
         recyclerViewAd = findViewById(R.id.add_recycler_view);
         recyclerViewAd.setHasFixedSize(true);
         layoutManager = new LinearLayoutManager(this);
         recyclerViewAd.setLayoutManager(layoutManager);
+
+        City city = new City();
+        databaseCity = Room.databaseBuilder(getApplicationContext(), DatabaseCity.class, "cityDb").build();
+
+
         storageRefUser.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -110,15 +130,41 @@ public class Home extends AppCompatActivity implements NavigationView.OnNavigati
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
+            }
+        });
+
+
+        modelAd = new ModelAd();
+        spinner = new Spinner(Home.this);
+        spinner = (Spinner) navigationView.getMenu().findItem(R.id.city).getActionView();
+
+        spinner.setSelection(0, false);
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+
+                itemCity = parent.getItemAtPosition(position).toString();
+                //Добавляем в SqlLite
+                AsyncTask.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        city.setId(1);
+                        city.setCityName(itemCity);
+                        Home.databaseCity.cityDao().addCity(city);
+                    }
+                });
+
+                modelAdList.clear();
+
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
 
             }
         });
-        modelAd = new ModelAd();
-        showData();
 
 
-
-        spinner = (Spinner) navigationView.getMenu().findItem(R.id.city).getActionView();
         storageRef.child("images/" + user.getUid()).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
             @Override
             public void onSuccess(Uri uri) {
@@ -136,40 +182,59 @@ public class Home extends AppCompatActivity implements NavigationView.OnNavigati
             }
         });
 
+        showData();
         LogOut();
-
 
 
     }
 
+    @SuppressLint("CheckResult")
     private void showData() {
+        //Ну многопоточность вроде тут получилась
+        databaseCity.cityDao().getCity()
+                .subscribeOn(Schedulers.computation())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<List<City>>() {
+                    @Override
+                    public void accept(List<City> cities) throws Exception {
+                        cityfromDb = cities.get(0).getCityName();
+                        spinner.setSelection(getIndex(spinner, cityfromDb));
+                        try {
+                            firebaseFirestore.collection("AddAd")
+                                    .document(cityfromDb)
+                                    .collection(cityfromDb).get()
+                                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                    for (DocumentSnapshot documentSnapshot : task.getResult()) {
 
-         String timestamp;
+                                        ModelAd modelAd = new ModelAd(documentSnapshot.getString("Name_Ads"),
+                                                documentSnapshot.getString("Adres"),
+                                                documentSnapshot.getString("adImage"),
+                                                documentSnapshot.getString("More_Details"),
+                                                documentSnapshot.getString("Phone"),
+                                                String.valueOf(documentSnapshot.get("Time")),
+                                                documentSnapshot.getString("User"));
+                                        modelAdList.add(modelAd);
 
-        firebaseFirestore.collection("AddAd").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                for (DocumentSnapshot documentSnapshot: task.getResult()){
+                                    }
 
-                    ModelAd modelAd = new ModelAd(documentSnapshot.getString("Name_Ads"), documentSnapshot.getString("Adres"),
-                            documentSnapshot.getString("adImage"),documentSnapshot.getString("More_Details"),
-                            documentSnapshot.getString("Phone"), String.valueOf(documentSnapshot.get("Time")),documentSnapshot.getString("User"));
-                    modelAdList.add(modelAd);
+                                    customAdapterRecycler = new CustomAdapterRecycler(Home.this, modelAdList);
+                                    recyclerViewAd.setAdapter(customAdapterRecycler);
 
-                }
+                                }
+                            }).addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    Toast.makeText(Home.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        } catch (Exception e) {
+                            Toast.makeText(Home.this, "Для вашего города объявлений нет", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
 
-                customAdapterRecycler = new CustomAdapterRecycler(Home.this, modelAdList);
-                recyclerViewAd.setAdapter(customAdapterRecycler);
-
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-
-                Toast.makeText(Home.this, e.getMessage(), Toast.LENGTH_SHORT).show();
-
-            }
-        });
     }
 
 
@@ -188,7 +253,7 @@ public class Home extends AppCompatActivity implements NavigationView.OnNavigati
         return false;
     }
 
-    public void LogOut(){
+    public void LogOut() {
         textViewLogOut.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -198,12 +263,23 @@ public class Home extends AppCompatActivity implements NavigationView.OnNavigati
         });
     }
 
+
     public void onBackPressed() {
         // super.onBackPressed();
 
     }
 
+    private int getIndex(Spinner spinner, String City){
 
+        int index = 0;
+
+        for (int i=0;i<spinner.getCount();i++){
+            if (spinner.getItemAtPosition(i).equals(City)){
+                index = i;
+            }
+        }
+        return index;
+    }
 
 
 }

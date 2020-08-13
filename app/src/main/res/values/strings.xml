@@ -3,7 +3,7 @@
     <string name="drawerOpen">drawerOpen</string>
     <string name="drawerClose">drawerClose</string>
     <string name="PlacesApiKey">AIzaSyChjP5hsInhv3gwcpz5mKdSMBn6MxIegns</string>
-    <string-array name="Cities">
+    <array name="cities">
         <item>Абакан</item>
         <item>Азов</item>
         <item>Александров</item>
@@ -326,5 +326,5 @@
         <item>Якутск</item>
         <item>Ялта</item>
         <item>Ярославль</item>
-    </string-array>
+    </array>
 </resources>

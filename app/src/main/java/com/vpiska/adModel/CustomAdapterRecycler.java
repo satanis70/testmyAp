@@ -1,9 +1,6 @@
 package com.vpiska.adModel;
 
-import android.app.ListActivity;
-import android.content.Context;
 import android.content.Intent;
-import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,11 +11,10 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.squareup.picasso.Picasso;
-import com.vpiska.AdActivity;
-import com.vpiska.Home;
+import com.vpiska.Activities.AdActivity;
+import com.vpiska.Activities.Home;
 import com.vpiska.R;
 
-import java.sql.Timestamp;
 import java.util.List;
 
 public class CustomAdapterRecycler extends RecyclerView.Adapter<ViewHolder> {
