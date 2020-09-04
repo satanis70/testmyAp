@@ -148,11 +148,12 @@ public class Home extends AppCompatActivity implements NavigationView.OnNavigati
                 AsyncTask.execute(new Runnable() {
                     @Override
                     public void run() {
-                        city.setId(1);
+                        city.setId(0);
                         city.setCityName(itemCity);
                         Home.databaseCity.cityDao().addCity(city);
                     }
                 });
+
 
                 modelAdList.clear();
 
