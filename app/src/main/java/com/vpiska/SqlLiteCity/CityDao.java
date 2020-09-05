@@ -1,9 +1,11 @@
 package com.vpiska.SqlLiteCity;
 
 import androidx.room.Dao;
+import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
+import androidx.room.Update;
 
 
 import java.util.List;
@@ -19,5 +21,8 @@ public interface CityDao {
 
     @Query("SELECT * FROM cityes")
     Flowable<List<City>> getCity();
+
+    @Update
+    public void update(City city);
 
 }

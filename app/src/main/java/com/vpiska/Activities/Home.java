@@ -55,6 +55,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import io.reactivex.Observable;
 import io.reactivex.Scheduler;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Consumer;
@@ -85,9 +86,10 @@ public class Home extends AppCompatActivity implements NavigationView.OnNavigati
     String itemCity;
     public static DatabaseCity databaseCity;
     String cityfromDb;
+    List<City> cityList;
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
-    @SuppressLint("RestrictedApi")
+    @SuppressLint({"RestrictedApi", "CheckResult"})
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -138,20 +140,51 @@ public class Home extends AppCompatActivity implements NavigationView.OnNavigati
         spinner = new Spinner(Home.this);
         spinner = (Spinner) navigationView.getMenu().findItem(R.id.city).getActionView();
 
-        spinner.setSelection(0, false);
+        //spinner.setSelection(0, false);
+
+
+
+        storageRef.child("images/" + user.getUid()).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+            @Override
+            public void onSuccess(Uri uri) {
+                ava = findViewById(R.id.ava);
+                Picasso.get().load(uri)
+                        .into(ava);
+            }
+
+        }).addOnFailureListener(exception -> {
+            Toast toast = Toast.makeText(getApplicationContext(),
+                    "При загрузке фотографии произошла ошибка!", Toast.LENGTH_SHORT);
+            toast.show();
+        });
+
+        databaseCity.cityDao().getCity()
+                .subscribeOn(Schedulers.computation())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(cities -> {
+                   if (cities.size()==0){
+                       Toast.makeText(getApplicationContext(), "Выбери город", Toast.LENGTH_SHORT).show();
+                   } else {
+                      showData();
+                   }
+                });
+
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
 
                 itemCity = parent.getItemAtPosition(position).toString();
+                Observable.just(databaseCity)
+                        .subscribeOn(Schedulers.io())
+                        .subscribe(databaseCity1 -> {
+                            databaseCity.cityDao().update(city);
+                        });
+                //databaseCity.cityDao().delete(city);
                 //Добавляем в SqlLite
-                AsyncTask.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        city.setId(1);
-                        city.setCityName(itemCity);
-                        Home.databaseCity.cityDao().addCity(city);
-                    }
+                AsyncTask.execute(() -> {
+                    city.setId(0);
+                    city.setCityName(itemCity);
+                    Home.databaseCity.cityDao().addCity(city);
                 });
 
                 modelAdList.clear();
@@ -165,24 +198,6 @@ public class Home extends AppCompatActivity implements NavigationView.OnNavigati
         });
 
 
-        storageRef.child("images/" + user.getUid()).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-            @Override
-            public void onSuccess(Uri uri) {
-                ava = findViewById(R.id.ava);
-                Picasso.get().load(uri)
-                        .into(ava);
-            }
-
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception exception) {
-                Toast toast = Toast.makeText(getApplicationContext(),
-                        "При загрузке фотографии произошла ошибка!", Toast.LENGTH_SHORT);
-                toast.show();
-            }
-        });
-
-        showData();
         LogOut();
 
 
@@ -191,49 +206,41 @@ public class Home extends AppCompatActivity implements NavigationView.OnNavigati
     @SuppressLint("CheckResult")
     private void showData() {
         //Ну многопоточность вроде тут получилась
-        databaseCity.cityDao().getCity()
-                .subscribeOn(Schedulers.computation())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Consumer<List<City>>() {
-                    @Override
-                    public void accept(List<City> cities) throws Exception {
+            databaseCity.cityDao().getCity()
+                    .subscribeOn(Schedulers.computation())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(cities -> {
                         cityfromDb = cities.get(0).getCityName();
-                        spinner.setSelection(getIndex(spinner, cityfromDb));
+                        //spinner.setSelection(getIndex(spinner, cityfromDb));
                         try {
                             firebaseFirestore.collection("AddAd")
                                     .document(cityfromDb)
                                     .collection(cityfromDb).get()
                                     .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                                @Override
-                                public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                                    for (DocumentSnapshot documentSnapshot : task.getResult()) {
+                                        @Override
+                                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                            for (DocumentSnapshot documentSnapshot : task.getResult()) {
 
-                                        ModelAd modelAd = new ModelAd(documentSnapshot.getString("Name_Ads"),
-                                                documentSnapshot.getString("Adres"),
-                                                documentSnapshot.getString("adImage"),
-                                                documentSnapshot.getString("More_Details"),
-                                                documentSnapshot.getString("Phone"),
-                                                String.valueOf(documentSnapshot.get("Time")),
-                                                documentSnapshot.getString("User"));
-                                        modelAdList.add(modelAd);
+                                                ModelAd modelAd = new ModelAd(documentSnapshot.getString("Name_Ads"),
+                                                        documentSnapshot.getString("Adres"),
+                                                        documentSnapshot.getString("adImage"),
+                                                        documentSnapshot.getString("More_Details"),
+                                                        documentSnapshot.getString("Phone"),
+                                                        String.valueOf(documentSnapshot.get("Time")),
+                                                        documentSnapshot.getString("User"));
+                                                modelAdList.add(modelAd);
 
-                                    }
+                                            }
 
-                                    customAdapterRecycler = new CustomAdapterRecycler(Home.this, modelAdList);
-                                    recyclerViewAd.setAdapter(customAdapterRecycler);
+                                            customAdapterRecycler = new CustomAdapterRecycler(Home.this, modelAdList);
+                                            recyclerViewAd.setAdapter(customAdapterRecycler);
 
-                                }
-                            }).addOnFailureListener(new OnFailureListener() {
-                                @Override
-                                public void onFailure(@NonNull Exception e) {
-                                    Toast.makeText(Home.this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                                }
-                            });
+                                        }
+                                    }).addOnFailureListener(e -> Toast.makeText(Home.this, e.getMessage(), Toast.LENGTH_SHORT).show());
                         } catch (Exception e) {
                             Toast.makeText(Home.this, "Для вашего города объявлений нет", Toast.LENGTH_SHORT).show();
                         }
-                    }
-                });
+                    });
 
     }
 
@@ -254,12 +261,9 @@ public class Home extends AppCompatActivity implements NavigationView.OnNavigati
     }
 
     public void LogOut() {
-        textViewLogOut.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                FirebaseAuth.getInstance().signOut();
-                startActivity(new Intent(Home.this, MainActivity.class));
-            }
+        textViewLogOut.setOnClickListener(v -> {
+            FirebaseAuth.getInstance().signOut();
+            startActivity(new Intent(Home.this, MainActivity.class));
         });
     }
 
