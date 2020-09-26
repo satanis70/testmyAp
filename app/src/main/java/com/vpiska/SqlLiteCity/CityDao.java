@@ -17,12 +17,11 @@ import io.reactivex.Flowable;
 public interface CityDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    public void addCity(City city);
+    void addCity(City city);
 
     @Query("SELECT * FROM cityes")
     Flowable<List<City>> getCity();
 
     @Update
-    public void update(City city);
-
+    void update(City city);
 }

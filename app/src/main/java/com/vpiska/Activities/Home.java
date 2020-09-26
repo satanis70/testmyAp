@@ -38,7 +38,9 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.auth.User;
 import com.google.firebase.storage.FirebaseStorage;
@@ -86,7 +88,7 @@ public class Home extends AppCompatActivity implements NavigationView.OnNavigati
     String itemCity;
     public static DatabaseCity databaseCity;
     String cityfromDb;
-    List<City> cityList;
+    private Boolean mIsSpinnerFirstCall = true;
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @SuppressLint({"RestrictedApi", "CheckResult"})
@@ -121,8 +123,6 @@ public class Home extends AppCompatActivity implements NavigationView.OnNavigati
 
         City city = new City();
         databaseCity = Room.databaseBuilder(getApplicationContext(), DatabaseCity.class, "cityDb").build();
-
-
         storageRefUser.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -143,51 +143,41 @@ public class Home extends AppCompatActivity implements NavigationView.OnNavigati
         //spinner.setSelection(0, false);
 
 
-
-        storageRef.child("images/" + user.getUid()).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-            @Override
-            public void onSuccess(Uri uri) {
-                ava = findViewById(R.id.ava);
-                Picasso.get().load(uri)
-                        .into(ava);
-            }
-
+        storageRef.child("images/" + user.getUid()).getDownloadUrl().addOnSuccessListener(uri -> {
+            ava = findViewById(R.id.ava);
+            Picasso.get().load(uri)
+                    .into(ava);
         }).addOnFailureListener(exception -> {
             Toast toast = Toast.makeText(getApplicationContext(),
                     "При загрузке фотографии произошла ошибка!", Toast.LENGTH_SHORT);
             toast.show();
+            //проверить есть ли на сервере фотография или нет
+            Intent intent = new Intent(Home.this, Upload_image.class);
+            startActivity(intent);
         });
 
-        databaseCity.cityDao().getCity()
-                .subscribeOn(Schedulers.computation())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(cities -> {
-                   if (cities.size()==0){
-                       Toast.makeText(getApplicationContext(), "Выбери город", Toast.LENGTH_SHORT).show();
-                   } else {
-                      showData();
-                   }
-                });
 
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-
                 itemCity = parent.getItemAtPosition(position).toString();
-                Observable.just(databaseCity)
-                        .subscribeOn(Schedulers.io())
-                        .subscribe(databaseCity1 -> {
-                            databaseCity.cityDao().update(city);
-                        });
-                //databaseCity.cityDao().delete(city);
-                //Добавляем в SqlLite
-                AsyncTask.execute(() -> {
-                    city.setId(0);
-                    city.setCityName(itemCity);
-                    Home.databaseCity.cityDao().addCity(city);
-                });
+                if(!mIsSpinnerFirstCall) {
+                    Observable.just(databaseCity)
+                            .subscribeOn(Schedulers.io())
+                            .subscribe((DatabaseCity databaseCity1) -> {
+                                databaseCity1.cityDao().update(city);
+                            });
 
-                modelAdList.clear();
+                    //Добавляем в Room
+                    AsyncTask.execute(() -> {
+                        city.setId(0);
+                        city.setCityName(itemCity);
+                        databaseCity.cityDao().addCity(city);
+                        showData();
+                    });
+                }
+
+                mIsSpinnerFirstCall = false;
 
             }
 
@@ -197,51 +187,62 @@ public class Home extends AppCompatActivity implements NavigationView.OnNavigati
             }
         });
 
+        databaseCity.cityDao().getCity().firstElement()
+                .subscribeOn(Schedulers.computation())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe((List<City> cities) -> {
+                    if (cities.isEmpty()) {
+                        Toast.makeText(getApplicationContext(), "Выберите город", Toast.LENGTH_SHORT).show();
+                    } else {
+                        showData();
+                    }
+                });
 
         LogOut();
 
 
     }
 
+
     @SuppressLint("CheckResult")
     private void showData() {
-        //Ну многопоточность вроде тут получилась
-            databaseCity.cityDao().getCity()
-                    .subscribeOn(Schedulers.computation())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(cities -> {
-                        cityfromDb = cities.get(0).getCityName();
-                        //spinner.setSelection(getIndex(spinner, cityfromDb));
-                        try {
-                            firebaseFirestore.collection("AddAd")
-                                    .document(cityfromDb)
-                                    .collection(cityfromDb).get()
-                                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                                        @Override
-                                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                                            for (DocumentSnapshot documentSnapshot : task.getResult()) {
+                databaseCity.cityDao().getCity()
+                .subscribeOn(Schedulers.computation())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe((List<City> cities) -> {
+                    cityfromDb = cities.get(0).getCityName();
+                    Toast.makeText(this, cityfromDb, Toast.LENGTH_SHORT).show();
+                    //spinner.setSelection(getIndex(spinner, cityfromDb));
+                    try {
+                        firebaseFirestore.collection("AddAd")
+                                .document(cityfromDb)
+                                .collection(cityfromDb).addSnapshotListener(new EventListener<QuerySnapshot>() {
+                            @Override
+                            public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
+                                modelAdList.clear();
+                                for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
+                                    ModelAd modelAd = new ModelAd(documentSnapshot.getString("Name_Ads"),
+                                            documentSnapshot.getString("Adres"),
+                                            documentSnapshot.getString("adImage"),
+                                            documentSnapshot.getString("More_Details"),
+                                            documentSnapshot.getString("Phone"),
+                                            String.valueOf(documentSnapshot.get("Time")),
+                                            documentSnapshot.getString("User"));
+                                    modelAdList.add(modelAd);
+                                }
+                                customAdapterRecycler = new CustomAdapterRecycler(Home.this, modelAdList);
+                                recyclerViewAd.setAdapter(customAdapterRecycler);
+                                customAdapterRecycler.notifyDataSetChanged();
 
-                                                ModelAd modelAd = new ModelAd(documentSnapshot.getString("Name_Ads"),
-                                                        documentSnapshot.getString("Adres"),
-                                                        documentSnapshot.getString("adImage"),
-                                                        documentSnapshot.getString("More_Details"),
-                                                        documentSnapshot.getString("Phone"),
-                                                        String.valueOf(documentSnapshot.get("Time")),
-                                                        documentSnapshot.getString("User"));
-                                                modelAdList.add(modelAd);
 
-                                            }
+                            }
 
-                                            customAdapterRecycler = new CustomAdapterRecycler(Home.this, modelAdList);
-                                            recyclerViewAd.setAdapter(customAdapterRecycler);
+                        });
 
-                                        }
-                                    }).addOnFailureListener(e -> Toast.makeText(Home.this, e.getMessage(), Toast.LENGTH_SHORT).show());
-                        } catch (Exception e) {
-                            Toast.makeText(Home.this, "Для вашего города объявлений нет", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-
+                    } catch (Exception e) {
+                        Toast.makeText(Home.this, "Для вашего города объявлений нет", Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
 
@@ -273,12 +274,12 @@ public class Home extends AppCompatActivity implements NavigationView.OnNavigati
 
     }
 
-    private int getIndex(Spinner spinner, String City){
+    private int getIndex(Spinner spinner, String City) {
 
         int index = 0;
 
-        for (int i=0;i<spinner.getCount();i++){
-            if (spinner.getItemAtPosition(i).equals(City)){
+        for (int i = 0; i < spinner.getCount(); i++) {
+            if (spinner.getItemAtPosition(i).equals(City)) {
                 index = i;
             }
         }

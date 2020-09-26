@@ -28,6 +28,7 @@ import com.google.android.libraries.places.widget.AutocompleteActivity;
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
@@ -177,8 +178,29 @@ public class AddAd extends AppCompatActivity {
                                             @Override
                                             public void onSuccess(final Uri uri) {
 
+                                                firebaseFirestore.collection("MyAd").document(user.getUid()).collection(user.getUid()).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                                                    @Override
+                                                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                                                        add = queryDocumentSnapshots.size();
+                                                        if (add<=2){
+                                                            adressMap.put("adImage", String.valueOf(uri));
+                                                            adressMap.put("Name_Ads", editTextNameAds.getText().toString());
+                                                            adressMap.put("More_Details", edit_text_more_details.getText().toString());
+                                                            adressMap.put("Adres", plasefromdb);
+                                                            adressMap.put("Phone", edit_text_number_phone.getText().toString());
+                                                            adressMap.put("Time", stringdate);
+                                                            adressMap.put("User", user.getUid());
+                                                            firebaseFirestore.collection("AddAd").document(city).collection(city).document().set(adressMap);
+                                                            firebaseFirestore.collection("MyAd").document(user.getUid()).collection(user.getUid()).document().set(adressMap);
+                                                            Intent intent = new Intent(AddAd.this, Home.class);
+                                                            startActivity(intent);
+                                                        } else {
+                                                            Toast.makeText(AddAd.this, "Возможно добавить только 3 объявления! Удалите старые", Toast.LENGTH_SHORT).show();
+                                                        }
+                                                    }
+                                                });
 
-                                                firebaseFirestore.collection("AddAd").whereEqualTo("User", user.getUid()).get()
+                                                /*firebaseFirestore.collection("MyAd").get()
                                                         .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                                                             @Override
                                                             public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
@@ -192,6 +214,7 @@ public class AddAd extends AppCompatActivity {
                                                                     adressMap.put("Time", stringdate);
                                                                     adressMap.put("User", user.getUid());
                                                                     firebaseFirestore.collection("AddAd").document(city).collection(city).document().set(adressMap);
+                                                                    firebaseFirestore.collection("MyAd").document(user.getUid()).set(adressMap);
                                                                     Intent intent = new Intent(AddAd.this, Home.class);
                                                                     startActivity(intent);
                                                                 } else if (add<=2){
@@ -202,6 +225,7 @@ public class AddAd extends AppCompatActivity {
                                                                     adressMap.put("Phone", edit_text_number_phone.getText().toString());
                                                                     adressMap.put("Time", stringdate);
                                                                     adressMap.put("User", user.getUid());
+                                                                    firebaseFirestore.collection("MyAd").document().set(adressMap);
                                                                     firebaseFirestore.collection("AddAd").document(city).collection(city).document().set(adressMap);
                                                                     Intent intent = new Intent(AddAd.this, Home.class);
                                                                     startActivity(intent);
@@ -210,7 +234,7 @@ public class AddAd extends AppCompatActivity {
                                                                 }
                                                             }
 
-                                                        });
+                                                        });*/
 
                             }
                         });

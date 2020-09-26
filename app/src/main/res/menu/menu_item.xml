@@ -9,8 +9,13 @@
     </item>
 
     <item android:id="@+id/addАd"
-        android:title="Добавить объявление">
+    android:title="Добавить объявление">
     </item>
+
+    <item android:id="@+id/myАd"
+        android:title="Мои объявления">
+    </item>
+
     <item android:id="@+id/messeges"
         android:title="Мои сообщения">
     </item>

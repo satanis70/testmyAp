@@ -11,7 +11,6 @@ public class City {
     @PrimaryKey
     private int id;
 
-    @ColumnInfo(name = "cityName")
     private String cityName;
 
     public int getId() {
