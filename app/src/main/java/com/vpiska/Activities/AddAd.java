@@ -73,7 +73,7 @@ public class AddAd extends AppCompatActivity {
         edit_text_more_details = findViewById(R.id.edit_text_more_details);
         edit_text_number_phone = findViewById(R.id.edit_text_number_phone);
         button_add_ad = findViewById(R.id.button_add_ad);
-        Places.initialize(getApplicationContext(), "AIzaSyChjP5hsInhv3gwcpz5mKdSMBn6MxIegns");
+        Places.initialize(getApplicationContext(), "");
         text_adress = findViewById(R.id.text_adress);
         text_adress.setFocusable(false);
         storage = FirebaseStorage.getInstance();
